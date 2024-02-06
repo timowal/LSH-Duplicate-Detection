@@ -98,14 +98,16 @@ def createProductShingles(product, shingleLength):
 
 
 def main():
-    random.seed(19)
+    random.seed(2024)
     productList, duplicateMatrix = dataPrepare()
     resultsPQLSH = []
     resultsPCLSH = []
     resultsF1LSH = []
+    resultsF1StarLSH = []
     resultsPQClust = []
     resultsPCClust = []
     resultsF1Clust = []
+    resultsF1StarClust = []
     thresholds = []
 
     #Parameters
@@ -272,6 +274,36 @@ def main():
             f1LSH = (2 * pairQualityLSH * pairCompletenessLSH) / (pairQualityLSH + pairCompletenessLSH)
             f1Clustering = (2 * pairQualityClustering * pairCompletenessClustering) / (pairQualityClustering + pairCompletenessClustering)
 
+            TP_LSH = 0
+            FP_LSH = 0
+            FN_LSH = 0
+            TP_Clust = 0
+            FP_Clust = 0
+            FN_Clust = 0
+
+            for i in range(len(mwList)):
+                for j in range(i + 1, len(mwList)):
+                    if currentDuplicateMatrix[i, j] == 1:
+                        if duplicateMatrixLSH[i, j] == 1:
+                            TP_LSH += 1
+                        else:
+                            FN_LSH += 1
+                        if clusteringDuplicates[i, j] == 1:
+                            TP_Clust += 1
+                        else:
+                            FN_Clust += 1
+                    if currentDuplicateMatrix[i, j] == 0:
+                        if duplicateMatrixLSH[i, j] == 1:
+                            FP_LSH += 1
+                        if clusteringDuplicates[i, j] == 1:
+                            FP_Clust += 1
+
+            F1StarLSH = (2 * TP_LSH) / (2 * TP_LSH + FP_LSH + FN_LSH)
+            F1StarClust = (2 * TP_Clust) / (2 * TP_Clust + FP_Clust + FN_Clust)
+
+            resultsF1StarLSH.append(F1StarLSH)
+            resultsF1StarClust.append(F1StarClust)
+
             resultsPQLSH.append(pairQualityLSH)
             resultsPCLSH.append(pairCompletenessLSH)
             resultsF1LSH.append(f1LSH)
@@ -285,8 +317,13 @@ def main():
     averagePQClust = np.zeros(len(thresholds))
     averagePCClust = np.zeros(len(thresholds))
     averageF1Clust = np.zeros(len(thresholds))
+    averageF1StarLSH = np.zeros(len(thresholds))
+    averageF1StarClust = np.zeros(len(thresholds))
+
     print("Best F1-measure for LSH" + str(max(resultsF1LSH)))
     print("Best F1-measure for Clustering" + str(max(resultsF1Clust)))
+    print("Best F1Star-measure for LSH" + str(max(resultsF1StarLSH)))
+    print("Best F1Star-measure for Clustering" + str(max(resultsF1StarClust)))
 
     print("Thresholds:")
     print(thresholds)
@@ -297,6 +334,8 @@ def main():
         averagePQClust[i % len(thresholds)] += (1 / bootstrapAmount) * resultsPQClust[i]
         averagePCClust[i % len(thresholds)] += (1 / bootstrapAmount) * resultsPCClust[i]
         averageF1Clust[i % len(thresholds)] += (1 / bootstrapAmount) * resultsF1Clust[i]
+        averageF1StarLSH[i % len(thresholds)] += (1 / bootstrapAmount) * resultsF1StarLSH[i]
+        averageF1StarClust[i % len(thresholds)] += (1 / bootstrapAmount) * resultsF1StarClust[i]
 
     print("Average Pair Quality LSH:")
     print(averagePQLSH)
@@ -315,6 +354,12 @@ def main():
 
     print("Average F1-measure Clustering:")
     print(averageF1Clust)
+
+    print("Average F1Star-Measure LSH:")
+    print(averageF1StarLSH)
+
+    print("Average F1Star-Measure Clust:")
+    print(averageF1StarClust)
 
 
 if __name__ == '__main__':

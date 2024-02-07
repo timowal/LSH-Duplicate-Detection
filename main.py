@@ -224,7 +224,7 @@ def main():
                     iProductBrand = iProduct['featuresMap'].get('brand')
                     jProductBrand = jProduct['featuresMap'].get('brand')
 
-                    if iProductBrand is not None and iProductBrand == jProductBrand:
+                    if iProductBrand is not None and iProductBrand != jProductBrand:
                         distanceMatrix[i, j] = maxDistance
                         distanceMatrix[j, i] = maxDistance
                         continue
